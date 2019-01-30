@@ -13,27 +13,30 @@
   "keywords": [
     "Retail",
     "Inventory",
-    "Inventory",
     "Equipment",
     "Item",
     "Master",
-    "Inventory",
     "App",
+    "Application",
     "Bluetooth",
     "Scanner",
     "USB",
     "Keyboard",
     "Scanned",
-    "Inventory",
     "SKU",
-    "Inventory",
-    "Item",
-    "Inventory"
+    "Item"
   ],
   "author": "Jose Gilberto Ponce",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/djplatino/inventory/issues"
   },
-  "homepage": "https://github.com/djplatino/inventory#readme"
+  "homepage": "https://github.com/djplatino/inventory#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "formidable": "^1.2.1",
+    "mysql": "^2.16.0",
+    "socket.io": "^2.2.0"
+  }
 }
