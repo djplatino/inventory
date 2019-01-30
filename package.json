@@ -1,0 +1,39 @@
+{
+  "name": "inventory",
+  "version": "1.0.0",
+  "description": "Processing Inventory Files - Load Item Master and process inventory files that specific format",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/djplatino/inventory.git"
+  },
+  "keywords": [
+    "Retail",
+    "Inventory",
+    "Inventory",
+    "Equipment",
+    "Item",
+    "Master",
+    "Inventory",
+    "App",
+    "Bluetooth",
+    "Scanner",
+    "USB",
+    "Keyboard",
+    "Scanned",
+    "Inventory",
+    "SKU",
+    "Inventory",
+    "Item",
+    "Inventory"
+  ],
+  "author": "Jose Gilberto Ponce",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/djplatino/inventory/issues"
+  },
+  "homepage": "https://github.com/djplatino/inventory#readme"
+}
