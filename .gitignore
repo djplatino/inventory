@@ -1,3 +1,5 @@
 #Some files/Directories here are going to be ignored
 #Node Modules are ignore so that you can install them when needed
 node_modules
+js
+css
