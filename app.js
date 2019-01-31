@@ -34,11 +34,7 @@ app.use(bodyParser.json());
 
 
 app.use('/assets', [
-    express.static(__dirname + '/node_modules/jquery/dist/'),
-    express.static(__dirname + '/node_modules/@fortawesome/fontawesome-free/'),
-    express.static(__dirname + '/uploads/'),
-    express.static(__dirname + '/itemMaster/'),
-    express.static(__dirname + '/node_modules/bootstrap/dist/')
+    express.static(__dirname + '/')
 ]);
 
 var con = mysql.createConnection({
@@ -48,6 +44,20 @@ var con = mysql.createConnection({
   database: "db767221961"
 });
 
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "gil",
+  database: "db767221961"
+});
+
+//con.connect(function(err) {
+//  if (err) throw err;
+//  console.log("DB Connected!");
+//});
+
+
+app.get('/', function(req, res){
 
   console.log(req.query.action);
   switch(req.query.action) {
@@ -395,7 +405,7 @@ http.listen(port, function(){
 io.on('connection', function(socket){
   console.log("connected");
   socket.on('test', function(msg){
-    console.log(msg);
+    //console.log(msg);
   });
   socket.on('inventory', function(msg){
     //console.log(msg);
