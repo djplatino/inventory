@@ -42,6 +42,7 @@ app.use('/assets', [
     express.static(__dirname + '/node_modules/bootstrap/dist/')
 ]);
 
+//ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'gil'
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -49,6 +50,7 @@ var con = mysql.createConnection({
   database: "db767221961"
 });
 
+app.get('/', function(req, res){
 
   console.log(req.query.action);
   switch(req.query.action) {
@@ -65,9 +67,6 @@ var con = mysql.createConnection({
       break;
 
   }
-
-
-
 });
 
 app.post('/', function (req, res){
@@ -111,47 +110,6 @@ fs.readdirAsync = function(dirname) {
         });
     });
 };
-
-/*
-department: "011"
-​​​​
-department_description: "Department 011"
-​​​​
-description: "Item 000000000001"
-​​​​
-item_id: "000000000001"
-​​​​
-item_price: "1.5"
-​​​​
-quantity_on_hand: "1"
-​​​​
-unit_of_measure: "EA"
-*/
-
-/*
-item_id "000000000001"
-description "Item 000000000001"
-quantity_on_hand  "1"
-department  "011"
-department_description  "Department 011"
-unit_of_measure "EA"
-item_price  "1.5"
-
-item_id "000000005664"
-item_description  "Item 000000005664"
-unit_of_measure "EA"
-department  "001"
-department_description  "Department 001"
-quantity_on_hand  127
-item_price  190.5
-
-inv_sequence  "74"
-item_id "000000001234"
-inv_quantity  "3"
-inv_area  "0000"
-inv_section "0000"
-
-*/
 
 function getItemMaster(res){
   //con.connect(function(err) {
@@ -247,13 +205,7 @@ function loadInventory(data, fileName){
   });
 
 }
-/*
-//{"counter":"Counter01","fileTime":1547945198464.978,
-"inventory":[{"area":"0010","section":"0006","sequence":1,
-"itemId":"000000012161","quantity":2343.0,"itemDescription":
-"Item 000000012161","quantityOnHand":127.0,"price":0.00,
-"department":"009","departmentDescription":"Department 009"},
-*/
+
 function loadItemMaster(data){
 
 }
@@ -377,6 +329,7 @@ function showItemMaster(){
         initial.has_error = true;
         initial.error_message = "Error retrieving data from retail_item_master(showItemMaster)";
         console.log("error");
+        console.log(err)
         sendMessage(initial,"error");
         return;
       }
@@ -387,8 +340,6 @@ function showItemMaster(){
   //});
 }
 
-
-
 http.listen(port, function(){
   console.log('listening on *:' + port);
 });
@@ -397,31 +348,30 @@ io.on('connection', function(socket){
   console.log("connected");
   socket.on('test', function(msg){
     console.log(msg);
-  });
+  })
   socket.on('inventory', function(msg){
-    //console.log(msg);
-    switch(msg.action){
-        case "item-master":
-            //loadItemMaster(msg.data);
-            break;
-        case "load-item-master":
-            //processItemMaster();
-            break;
-        case "process-inventory":
-            processInventory();
-            break;
-        case "show-itemMaster":
-          initial.is_processing = true;
-          initial.has_error = false;
+  switch(msg.action){
+      case "item-master":
+          //loadItemMaster(msg.data);
+          break;
+      case "load-item-master":
+          //processItemMaster();
+          break;
+      case "process-inventory":
+          processInventory();
+          break;
+      case "show-itemMaster":
+        initial.is_processing = true;
+        initial.has_error = false;
 //          console.log("error");
-          sendMessage(initial,"retrieving-item-master-data");
-          console.log("show itemMaster");
-          showItemMaster();
-                //processInventory();
-            break;
-        default:
-            break
-    }
+        sendMessage(initial,"retrieving-item-master-data");
+        console.log("show itemMaster");
+        showItemMaster();
+              //processInventory();
+          break;
+      default:
+          break
+  }
 
-  });
+});
 });

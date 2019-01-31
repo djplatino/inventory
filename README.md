@@ -11,6 +11,6 @@ When finished, this project will be able to be installed on many operating syste
 Node.js - https://nodejs.org/en/ - Used to create your own server on your computer.
 MySQL - https://www.mysql.com/ - Used to store your data.
 
-JQUERY - https://jquery.com/ - JavaScript library used on your index.html.
+JQUERY - https://jquery.com/ - JavaScript library used on your index.html.<br>
 D3.js - https://d3js.org/ - JavaScript library used on your index.html
 Font Awesome - https://fontawesome.com/v4.7.0/icons/ - JavaScript library used on your index.html
