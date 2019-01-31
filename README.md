@@ -21,6 +21,9 @@ The reason for listing all the software instead of providing a directory with al
 
 In the future, we may make available a complete directory, but for now you can install the software that is needed.
 
+From on down has been left to be used as template as this readme is updated
+
+
 <a href="http://fvcproductions.com"><img src="https://avatars1.githubusercontent.com/u/4284691?v=3&s=200" title="FVCproductions" alt="FVCproductions"></a>
 
 <!-- [![FVCproductions](https://avatars1.githubusercontent.com/u/4284691?v=3&s=200)](http://fvcproductions.com) -->
