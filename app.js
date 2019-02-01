@@ -46,22 +46,12 @@ var con = mysql.createConnection({
   database: "db767221961"
 });
 
-<<<<<<< HEAD
-var con = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "gil",
-  database: "db767221961"
-});
-
 //con.connect(function(err) {
 //  if (err) throw err;
 //  console.log("DB Connected!");
 //});
 
 
-=======
->>>>>>> 3bcc9495bc9c5fcdf18d4cb152016fdfd2632e85
 app.get('/', function(req, res){
 
   console.log(req.query.action);
@@ -359,7 +349,7 @@ http.listen(port, function(){
 io.on('connection', function(socket){
   console.log("connected");
   socket.on('test', function(msg){
-    //console.log(msg);
+    console.log(msg);
   });
   socket.on('inventory', function(msg){
   switch(msg.action){

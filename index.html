@@ -11,6 +11,14 @@
 <body>
   <div class="container-fluid">
     <div class="row">
+      <div class="col-sm-6">
+          <input type="text" class="form-control" id="user-input" placeholder="input">
+        </div>
+        <div class="col-sm-6">
+         <button type="button" id="action-button" class="btn btn-primary btn-block">Action</button>
+       </div>
+    </div>
+    <div class="row">
       <div class="col-12">
         <button type="button" id="action-button-test" class="btn btn-primary btn-block">Test</button>
       </div>
@@ -30,6 +38,39 @@
   <script>
     $(function () {
       var socket = io();
+
+      $("#action-button").on('click',function(){
+
+        var userAction = $('#user-input').val();
+        $("action-task").empty();
+        switch (userAction) {
+          case "test":
+            socket.emit('test', '{"action":"test","status":"success","message":"test"}');
+            console.log("testing");
+            break;
+          case "upload":
+            $('#upload-form-modal').modal('show')
+            break;
+          case "load":
+            var msg = {"action":"load-item-master"};
+            socket.emit('inventory', msg);
+            break;
+          case "process":
+            var msg = {"action":"process-inventory"};
+            socket.emit('inventory', msg);
+            break;
+          case "show itemMaster":
+            var msg = {"action":"show-itemMaster"};
+            socket.emit('inventory', msg);
+            break;
+        }
+      });
+
+
+      $("#action-button-test").on('click',function(){
+        $("#user-input").val("test");
+        $("#action-button").click();
+      });
 
 
     });
