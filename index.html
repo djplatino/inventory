@@ -11,12 +11,26 @@
 <body>
   <div class="container-fluid">
     <div class="row">
+        <div class="col-10" id="message">
+        </div>
+        <div class="col-2 text-center">
+          <span id="processing-indicator" style="font-size: 3em; color: green;" class="d-none">
+            <i  class="fas fa-spinner fa-spin "></i>
+          </span>
+        </div>
+    </div>
+    <div class="row">
       <div class="col-sm-6">
           <input type="text" class="form-control" id="user-input" placeholder="input">
         </div>
         <div class="col-sm-6">
          <button type="button" id="action-button" class="btn btn-primary btn-block">Action</button>
        </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6 col-md-3 col-lg-2">
+        <button type="button" id="action-button-load-pbook" class="btn btn-primary btn-block">Load PBook</button>
+      </div>
     </div>
     <div class="row">
       <div class="col-12">
@@ -39,7 +53,21 @@
     $(function () {
       var socket = io();
 
+      function updateMessage(classToSet, message){
+        $("#message").empty();
+        d3.select("#message")
+        .append('div')
+        .attr('class','alert alert-' + classToSet)
+        .html(message);
+      }
+
       $("#action-button").on('click',function(){
+        //Every time the action button is triggered, the processing indicator
+        //will be started. To stop the processing will wait for message from
+        //the server
+
+        //$("#processing-indicator").removeClass("d-none");
+        //updateMessage("success", $("#user-input").val() + " started");
 
         var userAction = $('#user-input').val();
         $("action-task").empty();
@@ -55,6 +83,10 @@
             var msg = {"action":"load-item-master"};
             socket.emit('inventory', msg);
             break;
+          case "load pbook":
+              var msg = {"action":"load-pbook"};
+              socket.emit('inventory', msg);
+              break;
           case "process":
             var msg = {"action":"process-inventory"};
             socket.emit('inventory', msg);
@@ -63,7 +95,14 @@
             var msg = {"action":"show-itemMaster"};
             socket.emit('inventory', msg);
             break;
+          default:
+            console.log("nothing to do");
         }
+      });
+
+      $("#action-button-load-pbook").on('click',function(){
+        $("#user-input").val("load pbook");
+        $("#action-button").click();
       });
 
 

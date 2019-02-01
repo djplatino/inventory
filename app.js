@@ -12,23 +12,19 @@ var bodyParser = require('body-parser');
 //var sqlite3 = require('sqlite3').verbose();
 var formidable = require('formidable');
 var fs = require('fs');
-
+//var d3 = Object.assign({}, require("d3-format"));
+var d3 = require("d3");
 var port = process.env.PORT || 3000;
 var inventoryUploadsDir = "./uploads";
 var inventoryItemMasterDir = "./itemMaster";
 
-var initial = {"area":0,
-               "section":0,
-               "is_reading_upc":false,
-               "is_reading_quantity":false,
-               "is_connected":false,
+var initial = {"is_connected":false,
                "last_sequence":1,
                "item_master_count":0,
                "processing_file":"",
                "is_processing":false,
                "has_error":false,
-               "error_message":"",
-               "is_expanding_upc":true};
+               "error_message":""};
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -167,8 +163,15 @@ function processingInventoryComplete(){
 }
 
 
+
+
+
 function isDataFile(filename) {
   return (filename.split('.')[1] == 'json')
+}
+
+function isPBOOK(filename) {
+  return (filename.split('.')[1] == 'TXT')
 }
 
 function readAllRows(){
@@ -249,6 +252,39 @@ function processItemMaster(){
                 var json_file = JSON.parse(contents);
                 //console.log(json_file);
                 loadItemMaster(json_file)
+            } catch (error) {
+                console.log(error);
+            }
+        });
+    }
+    console.log(filenames);
+    })
+
+}
+
+//PBOOK is a special format used by Inventory Count Pros
+function processPBOOK(){
+    fs.readdirAsync('./itemMaster')
+    .then(function (filenames){
+      if (typeof(filenames) != "undefined") {
+        filenames = filenames.filter(isPBOOK);
+        filenames.forEach(function(file) {
+          console.log(file);
+          try {
+            d3.csv("./itemMaster/" + file,function(data) {
+              console.log(data);
+              //for (var i = 0; i < data.length; i++) {
+                //console.log(data[i].Name);
+                //console.log(data[i].Age);
+              //}
+            });
+            //var contents = fs.readFileSync("./itemMaster/" +file);
+                //console.log(contents.toString());
+                //var data = d3.csv.parseRows(contents);
+                //console.log(data);
+                //var json_file = JSON.parse(contents);
+                //console.log(json_file);
+                //loadItemMaster(json_file)
             } catch (error) {
                 console.log(error);
             }
@@ -356,6 +392,10 @@ io.on('connection', function(socket){
       case "item-master":
           //loadItemMaster(msg.data);
           break;
+      case "load-pbook":
+        console.log("pbook");
+        processPBOOK()
+        break;
       case "load-item-master":
           //processItemMaster();
           break;
