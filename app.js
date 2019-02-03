@@ -38,7 +38,7 @@ app.use('/assets', [
 
 //ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'gil'
 var con = mysql.createConnection({
-  host: "localhost", 
+  host: "localhost",
   user: "root",
   password: "gil",
   database: "db767221961"
@@ -111,6 +111,28 @@ fs.readdirAsync = function(dirname) {
     });
 };
 
+function deleteItemMaster(){
+  //con.connect(function(err) {
+    //if (err) throw err;
+    con.query("DELETE FROM retail_item_master", function (err, result, fields) {
+      if (err) {
+        initial.is_processing = false;
+        initial.has_error = true;
+        initial.error_message = "Error deleting data from retail_item_master(deleteItemMaster)";
+        console.log("error");
+        console.log(err)
+        sendMessage(initial,"error");
+        return;
+      }
+      fsresult.has_error = false;
+      result.is_processing = false;
+      sendMessage(result,"delete-item-master-data");
+      //console.log(result);
+      //console.log(fields);
+    });
+  //});
+}
+
 function done() {
   console.log("done");
 }
@@ -119,7 +141,7 @@ function done() {
 function getCheckDigit(upc) {
   //console.log(upc);
 
-  var odd  = parseInt(upc.substring(0,1)) + 
+  var odd  = parseInt(upc.substring(0,1)) +
              parseInt(upc.substring(2,3)) +
              parseInt(upc.substring(4,5)) +
              parseInt(upc.substring(6,7)) +
@@ -286,7 +308,7 @@ function loadPBook(values){
     }
     result.has_error = false;
     result.is_processing = false;
-    sendMessage(result,"pbook-has-been-loaded"); 
+    sendMessage(result,"pbook-has-been-loaded");
     console.log(result);
     console.log("Number of records inserted: " + result.affectedRows);
   });
@@ -306,7 +328,7 @@ function processInventory(){
           console.log(file);
           try {
             var contents = fs.readFileSync("./uploads/" +file);
-                //console.log(contents);
+                console.log(contents);
                 var json_file = JSON.parse(contents);
                 loadInventory(json_file, file)
                 //console.log(json_file);
@@ -373,14 +395,14 @@ function processPBOOK(){
               var values = [];
 
               for(i in array) {
-        
+
                 arrFields = array[i].split(",");
                 if (arrFields.length == 11) {
 
                   for(j in arrFields) {
                     arrFields[j] = arrFields[j].replace(/"/g, ""); //remove double quotes
                     arrFields[j] = arrFields[j].replace(/'/g, ""); //remove single quotes
-                    
+
                     //console.log(arrFields[j]);
                   }
                   if (arrFields[1].length == 12) {
@@ -514,7 +536,12 @@ io.on('connection', function(socket){
     console.log(msg);
   });
   socket.on('inventory', function(msg){
-  switch(msg.action){
+    console.log(msg);
+    switch(msg.action){
+
+      case "delete-itemMaster":
+        deleteItemMaster();
+        break;
       case "item-master":
           //loadItemMaster(msg.data);
           break;

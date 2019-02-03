@@ -37,7 +37,13 @@
       </div>
       <div class="col-sm-6 col-md-3 col-lg-2">
           <button type="button" id="action-button-show-item-master" class="btn btn-primary btn-block">Show ItemMaster</button>
-        </div>
+      </div>
+      <div class="col-sm-6 col-md-3 col-lg-2">
+          <button type="button" id="action-button-delete-item-master" class="btn btn-primary btn-block">Delete ItemMaster</button>
+      </div>
+      <div class="col-sm-6 col-md-3 col-lg-2">
+          <button type="button" id="action-button-process-inventory" class="btn btn-primary btn-block">Process Inventory</button>
+      </div>
     </div>
     <div class="row">
       <div class="col-12">
@@ -64,7 +70,7 @@
   <script type="text/javascript" src="/assets/js/dc.datatables.js"></script>
   <script>
     $(function () {
-      
+
       var socket = io();
       var myTable = dc_datatables.datatable('.dc-data-table');
       //$('.dc-data-table').dataTable('.dc-data-table', { "columnDefs": [
@@ -217,6 +223,10 @@
             socket.emit('test', '{"action":"test","status":"success","message":"test"}');
             console.log("testing");
             break;
+          case "delete itemMaster":
+              var msg = {"action":"delete-itemMaster"};
+              socket.emit('inventory', msg);
+              break
           case "upload":
             $('#upload-form-modal').modal('show')
             break;
@@ -228,8 +238,9 @@
               var msg = {"action":"load-pbook"};
               socket.emit('inventory', msg);
               break;
-          case "process":
+          case "process inventory":
             var msg = {"action":"process-inventory"};
+            console.log(msg);
             socket.emit('inventory', msg);
             break;
           case "show itemMaster":
@@ -241,9 +252,19 @@
         }
       });
 
+      $("#action-button-delete-item-master").on('click',function(){
+          $("#user-input").val("delete itemMaster");
+          $("#action-button").click();
+      });
+
       $("#action-button-load-pbook").on('click',function(){
         $("#user-input").val("load pbook");
         $("#action-button").click();
+      });
+
+      $("#action-button-process-inventory").on('click',function(){
+          $("#user-input").val("process inventory");
+          $("#action-button").click();
       });
 
       $("#action-button-show-item-master").on('click',function(){
@@ -262,10 +283,23 @@
         try {
           if (msg.status=="success"){
             switch(msg.type) {
+              case "delete-item-master-data":
+                  updateMessage("success", msg.data.affectedRows + " were deleted");
+                  //if (!$("#processing-indicator" ).hasClass( "d-none")) {
+                  $("#processing-indicator").addClass("d-none");
+                  break;
               case "error":
                 updateMessage("danger", msg.data.error_message);
                 $("#processing-indicator").addClass("d-none");
                 break;
+              case "info":
+                  updateMessage("success", msg.data.info_message);
+                  if (msg.data.is_processing) {
+                    $("#processing-indicator").removeClass("d-none");
+                  } else {
+                    $("#processing-indicator").addClass("d-none");
+                  }
+                  break;
               case "item-master-data":
                   updateMessage("success", "Data retrieved");
                   //if (!$("#processing-indicator" ).hasClass( "d-none")) {
