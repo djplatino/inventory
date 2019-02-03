@@ -1,6 +1,7 @@
 /*
 Jose Gilberto Ponce
 01/30/2019
+
 */
 var express = require('express');
 var path = require('path');
@@ -12,8 +13,9 @@ var bodyParser = require('body-parser');
 //var sqlite3 = require('sqlite3').verbose();
 var formidable = require('formidable');
 var fs = require('fs');
+//var csv = require('csv-parser');
 //var d3 = Object.assign({}, require("d3-format"));
-var d3 = require("d3");
+//var d3 = require("d3");
 var port = process.env.PORT || 3000;
 var inventoryUploadsDir = "./uploads";
 var inventoryItemMasterDir = "./itemMaster";
@@ -36,7 +38,7 @@ app.use('/assets', [
 
 //ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'gil'
 var con = mysql.createConnection({
-  host: "localhost",
+  host: "localhost", 
   user: "root",
   password: "gil",
   database: "db767221961"
@@ -108,6 +110,43 @@ fs.readdirAsync = function(dirname) {
         });
     });
 };
+
+function done() {
+  console.log("done");
+}
+
+
+function getCheckDigit(upc) {
+  //console.log(upc);
+
+  var odd  = parseInt(upc.substring(0,1)) + 
+             parseInt(upc.substring(2,3)) +
+             parseInt(upc.substring(4,5)) +
+             parseInt(upc.substring(6,7)) +
+             parseInt(upc.substring(8,9)) +
+             parseInt(upc.substring(10,11));
+  var even = parseInt(upc.substring(1,2)) +
+             parseInt(upc.substring(3,4)) +
+             parseInt(upc.substring(5,6)) +
+             parseInt(upc.substring(7,8)) +
+             parseInt(upc.substring(9,10));
+  var total = (odd * 3) + even;
+  var strTotal = ""+total;
+  var lastDigit = parseInt(strTotal.substring(strTotal.length -1 ,strTotal.length));
+  var checkDigit = 0;
+  if (lastDigit != 0) {
+    checkDigit = 10 - lastDigit
+  }
+
+
+
+  //console.log(lastDigit + " " + checkDigit);
+  return checkDigit;
+  //55 51 18 70 20 0
+  //95 55 11 87 02 00
+
+
+}
 
 function getItemMaster(res){
   //con.connect(function(err) {
@@ -211,6 +250,49 @@ function loadInventory(data, fileName){
 
 }
 
+function loadPBook(values){
+  //console.log(data);
+  //var values = [];
+  //var auditorId=123;
+  //var fileName="";
+  //auditorId = data.counter;
+  //fileName = fi
+  //16000 ,000912846162,"I",4,"Twist","Each","EA",0001,0000.0000,01,000000
+  //for(var i=0; i< data.length; i++) {
+    //values.push(data[i][0]);
+
+  //}
+  //console.log(values);
+
+    /*
+    values.push([data.inventory[i].sequence,
+                 data.inventory[i].itemId,
+                 data.inventory[i].quantity,
+                 data.inventory[i].area,
+                 data.inventory[i].section,
+                 auditorId,
+                 fileName]);
+                 */
+  //console.log(values);
+
+  var sql = "INSERT IGNORE INTO retail_item_master (item_id,item_description,unit_of_measure,department,department_description,quantity_on_hand,item_price) VALUES ?";
+  con.query(sql, [values], function (err, result) {
+    if (err){
+      initial.has_error = true;
+      initial.error_message = "There was an error while inserting PBOOK into retail_item_master";
+      initial.is_processing = false;
+      sendMessage(initial,"error");
+      return;
+    }
+    result.has_error = false;
+    result.is_processing = false;
+    sendMessage(result,"pbook-has-been-loaded"); 
+    console.log(result);
+    console.log("Number of records inserted: " + result.affectedRows);
+  });
+
+}
+
 function loadItemMaster(data){
 
 }
@@ -262,7 +344,20 @@ function processItemMaster(){
 
 }
 
+
+
 //PBOOK is a special format used by Inventory Count Pros
+// For PBOOK.TXT file
+                            // the UPC should be
+                            // 12 digits long
+                            // otherwise ignore
+                            // This file
+                            // includes one
+                            // extra digit at
+                            // the beginning
+                            // This file does
+                            // not include check
+                            // digit
 function processPBOOK(){
     fs.readdirAsync('./itemMaster')
     .then(function (filenames){
@@ -271,28 +366,57 @@ function processPBOOK(){
         filenames.forEach(function(file) {
           console.log(file);
           try {
-            d3.csv("./itemMaster/" + file,function(data) {
-              console.log(data);
-              //for (var i = 0; i < data.length; i++) {
-                //console.log(data[i].Name);
-                //console.log(data[i].Age);
-              //}
+            fs.readFile("./itemMaster/" + file, function(err, data) {
+              if(err) throw err;
+              var array = data.toString().split("\n");
+              //console.log(array.length);
+              var values = [];
+
+              for(i in array) {
+        
+                arrFields = array[i].split(",");
+                if (arrFields.length == 11) {
+
+                  for(j in arrFields) {
+                    arrFields[j] = arrFields[j].replace(/"/g, ""); //remove double quotes
+                    arrFields[j] = arrFields[j].replace(/'/g, ""); //remove single quotes
+                    
+                    //console.log(arrFields[j]);
+                  }
+                  if (arrFields[1].length == 12) {
+                    //getCheckDigit(arrFields[1].substring(1,12));
+                    arrFields[1] = arrFields[1].substring(1,12) + getCheckDigit(arrFields[1].substring(1,12));
+                    //var sql = "INSERT IGNORE INTO retail_item_master (item_id,item_description,unit_of_measure,department,department_description,quantity_on_hand,item_price) VALUES ?";
+                    //16000 ,        // 0
+                    //000912846162,  // 1
+                    //"I",           // 2
+                    //4,             // 3
+                    //"Twist",       // 4
+                    //"Each",        // 5
+                    //"EA",          // 6
+                    //0001,          // 7
+                    //0000.0000,     // 8
+                    //01,            // 9
+                    //000000         //10
+                    values.push([arrFields[1],arrFields[4],arrFields[6],arrFields[9],"department " + arrFields[9],0,parseFloat(arrFields[8])]);
+
+                    //values.push([arrFields[1],arrFields[4]]);
+                    //loadPBook(arrFields);
+                  }
+                }
+              }
+              console.log(values.length);
+              loadPBook(values);
+              //done();
             });
-            //var contents = fs.readFileSync("./itemMaster/" +file);
-                //console.log(contents.toString());
-                //var data = d3.csv.parseRows(contents);
-                //console.log(data);
-                //var json_file = JSON.parse(contents);
-                //console.log(json_file);
-                //loadItemMaster(json_file)
-            } catch (error) {
+
+          } catch (error) {
                 console.log(error);
-            }
+           }
         });
     }
     console.log(filenames);
     })
-
 }
 
 function processUploadedFile(file) {
@@ -371,6 +495,8 @@ function showItemMaster(){
         sendMessage(initial,"error");
         return;
       }
+      //result.has_error = false;
+      //result.is_processing = false;
       sendMessage(result,"item-master-data");
       //console.log(result);
       //console.log(fields);

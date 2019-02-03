@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="Jose Gilberto Ponce">
   <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="/assets/css/all.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="/assets/css/jquery.dataTables.css">
@@ -31,10 +35,19 @@
       <div class="col-sm-6 col-md-3 col-lg-2">
         <button type="button" id="action-button-load-pbook" class="btn btn-primary btn-block">Load PBook</button>
       </div>
+      <div class="col-sm-6 col-md-3 col-lg-2">
+          <button type="button" id="action-button-show-item-master" class="btn btn-primary btn-block">Show ItemMaster</button>
+        </div>
     </div>
     <div class="row">
       <div class="col-12">
         <button type="button" id="action-button-test" class="btn btn-primary btn-block">Test</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <table class="table table-hover dc-data-table table-bordered table-striped">
+        </table>
       </div>
     </div>
 
@@ -51,7 +64,21 @@
   <script type="text/javascript" src="/assets/js/dc.datatables.js"></script>
   <script>
     $(function () {
+      
       var socket = io();
+      var myTable = dc_datatables.datatable('.dc-data-table');
+      //$('.dc-data-table').dataTable('.dc-data-table', { "columnDefs": [
+    //{ "type": "html", "targets": 0 }
+  //]
+//} );
+      var priceFormat = d3.format(".2f");
+
+      //myTable.dataTable( {
+      //    responsive: true,
+      //    columnDefs: [
+      //      { targets: [-1, -3], className: 'dt-body-right' }
+      //    ]
+      //  } );
 
       function updateMessage(classToSet, message){
         $("#message").empty();
@@ -61,13 +88,127 @@
         .html(message);
       }
 
+      function showTable(data){
+
+        $('.dc-data-table').empty();
+
+        console.log(data.length);
+
+        if (data.length > 0) {
+          console.log(data);
+          //var myTable = dc_datatables.datatable('.dc-data-table');
+
+          var ndx = crossfilter(data);
+          var allDim = ndx.dimension(function(d) {return d;});
+          //var all = ndx.groupAll();
+
+          myTable
+          .dimension(allDim)
+          // Data table does not use crossfilter group but rather a closure
+          // as a grouping function
+          .group(function (d) {
+              //var format = d3.format('02d');
+              //return d.dd.getFullYear() + '/' + format((d.dd.getMonth() + 1));
+              return d.item_id;
+          })
+          //.showGroups(true)
+          // (_optional_) max number of records to be shown, `default = 25`
+          //.size(Infinity)
+          .size(25)
+          // There are several ways to specify the columns; see the data-table documentation.
+          // This code demonstrates generating the column header automatically based on the columns.
+          .columns([
+            //"department",
+              // Use the `d.date` field; capitalized automatically; specify sorting order
+
+              // Use `d.open`, `d.close`; default sorting order is numeric
+              {
+                  // Specify a custom format for column 'Change' by using a label with a function.
+                  label: 'Item ID',
+                  format: function (d) {
+                      //return numberFormat(d.close - d.open);
+                      return d.item_id;
+                  }
+              },
+              {
+                  // Specify a custom format for column 'Change' by using a label with a function.
+                  label: 'Description',
+                  format: function (d) {
+                      //return numberFormat(d.close - d.open);
+                      return d.item_description;
+                  }
+              },
+              {
+                  // Specify a custom format for column 'Change' by using a label with a function.
+                  label: 'Price',
+                  format: function (d) {
+                      //return numberFormat(d.item_price);
+                      return priceFormat(d.item_price)
+                      //return d.item_price;
+                  }
+              },
+              {
+                  // Specify a custom format for column 'Change' by using a label with a function.
+                  label: 'Qty on Hand',
+                  format: function (d) {
+                      //return numberFormat(d.close - d.open);
+                      return d.quantity_on_hand;
+                  }
+              },
+              {
+                  // Specify a custom format for column 'Change' by using a label with a function.
+                  label: 'UAM',
+                  format: function (d) {
+                      //return numberFormat(d.close - d.open);
+                      return d.unit_of_measure;
+                  }
+              },
+              {
+                  // Specify a custom format for column 'Change' by using a label with a function.
+                  label: 'Dept',
+                  format: function (d) {
+                      //return numberFormat(d.close - d.open);
+                      return d.department;
+                  }
+              },
+              {
+                  // Specify a custom format for column 'Change' by using a label with a function.
+                  label: 'Dept Description',
+                  format: function (d) {
+                      //return numberFormat(d.close - d.open);
+                      return d.department_description;
+                  }
+              }
+          ])
+
+          // (_optional_) sort using the given field, `default = function(d){return d;}`
+          .sortBy(function (d) {
+              return d.department;
+          })
+          // (_optional_) sort order, `default = d3.ascending`
+          .order(d3.ascending)
+          // (_optional_) custom renderlet to post-process chart using [D3](http://d3js.org)
+          .on('renderlet', function (table) {
+              table.selectAll('.dc-table-group').classed('info', true);
+          });
+          dc.renderAll();
+          //$('table tr th:eq(2)').css('text-align', 'right');
+          //$('tr').each(function(){ $(this).children('td:eq(2)').addClass('text-right');})
+
+          //$('table tr th:eq(3)').css('text-align', 'right');
+          //$('tr').each(function(){ $(this).children('td:eq(3)').addClass('text-right');})
+        }
+
+
+      }
+
       $("#action-button").on('click',function(){
         //Every time the action button is triggered, the processing indicator
         //will be started. To stop the processing will wait for message from
         //the server
 
-        //$("#processing-indicator").removeClass("d-none");
-        //updateMessage("success", $("#user-input").val() + " started");
+        $("#processing-indicator").removeClass("d-none");
+        updateMessage("success", $("#user-input").val() + " started");
 
         var userAction = $('#user-input').val();
         $("action-task").empty();
@@ -105,10 +246,80 @@
         $("#action-button").click();
       });
 
+      $("#action-button-show-item-master").on('click',function(){
+          $("#user-input").val("show itemMaster");
+          $("#action-button").click();
+      });
+
 
       $("#action-button-test").on('click',function(){
         $("#user-input").val("test");
         $("#action-button").click();
+      });
+
+      socket.on('inventory', function(msg){
+        console.log(msg);
+        try {
+          if (msg.status=="success"){
+            switch(msg.type) {
+              case "error":
+                updateMessage("danger", msg.data.error_message);
+                $("#processing-indicator").addClass("d-none");
+                break;
+              case "item-master-data":
+                  updateMessage("success", "Data retrieved");
+                  //if (!$("#processing-indicator" ).hasClass( "d-none")) {
+                  $("#processing-indicator").addClass("d-none");
+                  showTable(msg.data);
+                  //  console.log("remove");
+                  //}
+                  //else {
+                  //  console.log("remove 2");
+                  //}
+
+                  break;
+              case "pbook-has-been-loaded":
+                updateMessage("success",msg.data.affectedRows + " have been inserted from PBOOK.TXT. " + msg.data.changedRows + " were duplicate.");
+                if (msg.data.is_processing) {
+                  $("#processing-indicator").removeClass("d-none");
+                } else {
+                  $("#processing-indicator").addClass("d-none");
+                }
+
+                //$("#processing-indicator").removeClass("d-none");
+                break;
+              case "processing-inventory":
+                updateMessage("success","processing " + msg.data.processing_file);
+                $("#processing-indicator").removeClass("d-none");
+                break;
+              case "processing-inventory-complete":
+                updateMessage("success","processing " + msg.data.processing_file + " complete");
+                $("#processing-indicator").addClass("d-none");
+                break;
+              case "processing-item-master":
+                updateMessage("success","processing Item Master file");
+                $("#processing-indicator").removeClass("d-none");
+                break;
+              case "processing-item-master-is-complete":
+                updateMessage("success","processing Item Master file has been completed");
+                $("#processing-indicator").addClass("d-none");
+                break;
+              case "retrieving-item-master-data":
+                console.log("retrieving-item-master-data");
+                updateMessage("success","Retrieving Item Master");
+                $("#processing-indicator").removeClass("d-none");
+                break;
+              default:
+                break;
+            }
+          }
+
+        }
+        catch(ex) {
+
+        }
+
+        console.log(msg);
       });
 
 
