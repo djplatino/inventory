@@ -110,6 +110,28 @@ fs.readdirAsync = function(dirname) {
     });
 };
 
+function deleteInventory(){
+  //con.connect(function(err) {
+    //if (err) throw err;
+    con.query("DELETE FROM retail_inventory", function (err, result, fields) {
+      if (err) {
+        initial.is_processing = false;
+        initial.has_error = true;
+        initial.error_message = "Error deleting data from retail_inventory(deleteInventory)";
+        console.log("error");
+        console.log(err)
+        sendMessage(initial,"error");
+        return;
+      }
+      result.has_error = false;
+      result.is_processing = false;
+      sendMessage(result,"delete-inventory");
+      //console.log(result);
+      //console.log(fields);
+    });
+  //});
+}
+
 function deleteItemMaster(){
   //con.connect(function(err) {
     //if (err) throw err;
@@ -167,6 +189,26 @@ function getCheckDigit(upc) {
   //95 55 11 87 02 00
 
 
+}
+
+function getInventory(){
+  //con.connect(function(err) {
+    //if (err) throw err;
+    con.query("SELECT * FROM retail_inventory order by inv_sequence", function (err, result, fields) {
+    if (err){
+        initial.has_error = true;
+        initial.error_message = "There was an error retrieving inventory";
+        initial.is_processing = false;
+        sendMessage(initial,"error");
+        return;
+    }
+    result.has_error = false;
+    result.is_processing = false;
+    sendMessage(result,"download-inventory");
+    console.log(result);
+    console.log(fields);
+    console.log("Number of records inserted: " + result.affectedRows);
+    });
 }
 
 function getItemMaster(res){
@@ -264,7 +306,16 @@ function loadInventory(data, fileName){
 
   var sql = "INSERT IGNORE INTO retail_inventory (inv_sequence,item_id,inv_quantity,inv_area,inv_section, inv_auditor, inv_file_name) VALUES ?";
   con.query(sql, [values], function (err, result) {
-    if (err) throw err;
+    if (err){
+      initial.has_error = true;
+      initial.error_message = "There was an error while loading inventory";
+      initial.is_processing = false;
+      sendMessage(initial,"error");
+      return;
+    }
+    result.has_error = false;
+    result.is_processing = false;
+    sendMessage(result,"inventory-has-been-loaded");
     console.log(result);
     console.log("Number of records inserted: " + result.affectedRows);
   });
@@ -327,7 +378,7 @@ function processInventory(){
           console.log(file);
           try {
             var contents = fs.readFileSync("./uploads/" +file);
-                console.log(contents);
+                //console.log(contents);
                 var json_file = JSON.parse(contents);
                 loadInventory(json_file, file)
                 //console.log(json_file);
@@ -336,6 +387,7 @@ function processInventory(){
                 console.log(error);
             }
         });
+        console.log("complete");
     }
     console.log(filenames);
     })
@@ -537,9 +589,14 @@ io.on('connection', function(socket){
   socket.on('inventory', function(msg){
     console.log(msg);
     switch(msg.action){
-
+      case "delete-inventory":
+        deleteInventory();
+        break;
       case "delete-itemMaster":
         deleteItemMaster();
+        break;
+      case "download-inventory":
+        getInventory();
         break;
       case "item-master":
           //loadItemMaster(msg.data);
