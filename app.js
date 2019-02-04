@@ -39,7 +39,7 @@ app.use('/assets', [
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "gil",
+  password: "",
   database: "db767221961"
 });
 

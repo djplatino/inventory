@@ -84,6 +84,10 @@
   //]
 //} );
       var priceFormat = d3.format(".2f");
+      //let str = '1234'.padStart(8,'0');
+      //console.log(str); // "00001234"
+      //let str2 = '1234'.padEnd(8,'0');
+      //console.log(str2); // "00001234"
 
       //myTable.dataTable( {
       //    responsive: true,
@@ -112,7 +116,15 @@ function downloadInventory(data) {
   var info="";
 
   for (var i = 0; i < data.length; i++) {
-    info = info + data[i].item_id + "\r\n";
+    info = info +
+           data[i].inv_sequence.toString().padStart(5,'0') +
+           data[i].inv_area.padStart(4,"0") +
+           data[i].inv_section.padStart(4,"0") +
+           "001" + //Category
+           data[i].item_id.padEnd(16) +
+           data[i].inv_quantity.toString().padStart(5,"0") +
+           "000030000000000000N01" +
+            "\r\n";
   }
   download("test.txt", info);
 
