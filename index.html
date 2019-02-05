@@ -116,17 +116,34 @@ function downloadInventory(data) {
   var info="";
 
   for (var i = 0; i < data.length; i++) {
-    info = info +
-           data[i].inv_sequence.toString().padStart(5,'0') +
-           data[i].inv_area.padStart(4,"0") +
-           data[i].inv_section.padStart(4,"0") +
-           "001" + //Category
-           data[i].item_id.padEnd(16) +
-           data[i].inv_quantity.toString().padStart(5,"0") +
-           "000030000000000000N01" +
-            "\r\n";
+    if (data[i].inv_quantity >= 0) {
+      info = info +
+             data[i].inv_sequence.toString().padStart(5,'0') +
+             data[i].inv_area.padStart(4,"0") +
+             data[i].inv_section.padStart(4,"0") +
+             "001" + //Category
+             data[i].item_id.padEnd(16) +
+             "0" +
+             "00010" +
+             data[i].inv_quantity.toString().padStart(5,"0") +
+             "0000000N01" +
+              "\r\n";
+    }
+    else {
+      info = info +
+             data[i].inv_sequence.toString().padStart(5,'0') +
+             data[i].inv_area.padStart(4,"0") +
+             data[i].inv_section.padStart(4,"0") +
+             "001" + //Category
+             data[i].item_id.padEnd(16) +
+             "5" +
+             "00010" +
+             (data[i].inv_quantity * -1).toString().padStart(5,"0") +
+             "0000000N01" +
+              "\r\n";
+    }
   }
-  download("test.txt", info);
+  download("UPLD000X.TXT", info);
 
 
   //for item in data {
